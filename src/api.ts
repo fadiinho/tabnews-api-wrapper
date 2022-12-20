@@ -3,6 +3,7 @@ import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } f
 import { AnyContent, Content, ContentParams, ContentWithoutBody } from "./types/content";
 import { ChildContentPublishedStatus, RootContentPublishedStatus, UsersCreatedStatus } from "./types/status";
 import  { TabnewsError } from "./types/errors";
+import { UserToken } from "./types/user";
 
 export class TabnewsApi {
     axiosOptions: AxiosRequestConfig;
@@ -11,7 +12,8 @@ export class TabnewsApi {
         this.axiosOptions = {
             baseURL: 'https://www.tabnews.com.br/api/v1',
             headers: {
-                "Accept-Encoding": "gzip,deflate,compress"
+                "Accept-Encoding": "gzip,deflate,compress",
+                "Content-Type": "application/json"
             },
             ...axiosOptions
         };
@@ -121,5 +123,55 @@ export class TabnewsApi {
         const userStatus = this._getStatus('/child-content-published');
 
         return userStatus;
+    }
+
+    /**
+     * Creates a user
+     * @param username - new user username
+     * @param email - new user email
+     * @param password - new user password
+     * @returns ?
+     */
+    // TODO: esta função não foi testada
+    async createUser(
+        data: { username: string; email: string; password: string; }
+    ): Promise<unknown> {
+        const response = await this.client.post('/users', data).catch(this._handleError);
+
+        return response.data;
+    }
+
+
+    /**
+     * Login with email and password
+     * @param email - account email
+     * @param password - account password
+     * @returns an object containing auth info
+     */
+    async login(
+        { email, password }: { email: string; password: string}
+    ): Promise<UserToken> {
+        const response = await this.client.post('/sessions', { email, password })
+            .catch(this._handleError);
+
+        return response.data;
+    }
+
+    /**
+     * Recover account.
+     * Only one of the following parameters should be used
+     * @param username - account username
+     * @param email - account email
+
+     * @returns ?
+     */
+    // TODO: Esta função não foi testada
+    async recovery(
+        { username, email }: { username?: string; email?: string}
+    ): Promise<unknown> {
+        const response = await this.client.post('/recovery', { username, email })
+            .catch(this._handleError);
+
+        return response.data;
     }
 }
