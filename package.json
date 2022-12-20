@@ -1,6 +1,7 @@
 {
     "name": "tabnews-wrapper",
     "author": "fadiinho",
+    "main": "dist/index.js",
     "types": "types/**/*",
     "scripts": {
         "start:dev": "ts-node-dev --respawn --rs src/index.ts",

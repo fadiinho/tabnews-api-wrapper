@@ -1,7 +1,8 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
-import { AnyContent, Content, ContentParams, ContentWithoutBody } from "../types/content";
-import  { TabnewsError } from "../types/errors";
+import { AnyContent, Content, ContentParams, ContentWithoutBody } from "./types/content";
+import { ChildContentPublishedStatus, RootContentPublishedStatus, UsersCreatedStatus } from "./types/status";
+import  { TabnewsError } from "./types/errors";
 
 export class TabnewsApi {
     axiosOptions: AxiosRequestConfig;
@@ -69,11 +70,47 @@ export class TabnewsApi {
      * @returns a image as buffer
      */
     async getPostThumbnail(user: string, slug: string): Promise<Buffer | TabnewsError> {
-        // @ts-ignore
         const response: AxiosResponse = await this.client.get(`/contents/${user}/${slug}/thumbnail`, {
             responseType: 'arraybuffer'
         });
 
         return response.data;
+    }
+
+    private async _getStatus(path: string) {
+        const response: AxiosResponse = await this.client.get(`/analytics${path}`);
+
+        return response.data;
+
+    }
+
+    /**
+     * Get the analytics of the registred users
+     * @returns an array containing how many users were created (per day)
+     */
+    async userAnalytics(): Promise<UsersCreatedStatus[]> {
+        const userStatus = this._getStatus('/users-created');
+
+        return userStatus;
+    }
+
+    /**
+     * Get the analytics of the registred posts
+     * @returns an array containing how many posts were created (per day)
+     */
+    async postAnalytics(): Promise<RootContentPublishedStatus[]> {
+        const userStatus = this._getStatus('/root-content-published');
+
+        return userStatus;
+    }
+
+    /**
+     * Get the analytics of the published comments
+     * @returns an array containing how many comments were created (per day)
+     */
+    async commentsAnalytics(): Promise<ChildContentPublishedStatus[]> {
+        const userStatus = this._getStatus('/child-content-published');
+
+        return userStatus;
     }
 }
