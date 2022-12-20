@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
 import { AnyContent, Content, ContentParams, ContentWithoutBody } from "./types/content";
 import { ChildContentPublishedStatus, RootContentPublishedStatus, UsersCreatedStatus } from "./types/status";
@@ -19,13 +19,21 @@ export class TabnewsApi {
         this.client = axios.create(this.axiosOptions);
     }
 
+    private _handleError(error: AxiosError) {
+        if (error.response) {
+            return error.response;
+        }
+
+        throw error;
+    }
+
     private async _getContents(path: string, params?: ContentParams): Promise<AnyContent | TabnewsError> {
         const response: AxiosResponse = await this.client.get(`/contents${path}`, { params: {
                 page: params?.page,
                 per_page: params?.perPage,
                 strategy: params?.strategy
             }
-        });
+        }).catch(this._handleError);
 
         return response.data;
     }
@@ -72,13 +80,14 @@ export class TabnewsApi {
     async getPostThumbnail(user: string, slug: string): Promise<Buffer | TabnewsError> {
         const response: AxiosResponse = await this.client.get(`/contents/${user}/${slug}/thumbnail`, {
             responseType: 'arraybuffer'
-        });
+        }).catch(this._handleError);;
 
         return response.data;
     }
 
     private async _getStatus(path: string) {
-        const response: AxiosResponse = await this.client.get(`/analytics${path}`);
+        const response: AxiosResponse = await this.client.get(`/analytics${path}`)
+            .catch(this._handleError);
 
         return response.data;
 
